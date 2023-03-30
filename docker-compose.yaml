@@ -1,0 +1,39 @@
+version: "3.8"
+
+networks:
+  corp:
+    driver: bridge
+
+services:
+  database:
+    container_name: imake-db
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+      # Create a new database. Please note, the
+      # /docker-entrypoint-initdb.d/init.js has to be executed
+      # in order for the database to be created
+      MONGO_INITDB_DATABASE: imak
+    volumes:
+      # Add the db-init.js file to the Mongo DB container
+      - ./db-initial.js:/docker-entrypoint-initdb.d/init.js:rs
+    ports:
+      - '27017-27019:27017-27019'
+    networks:
+      - corp
+  mongo-express:
+    container_name: imak-mongo-express
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    networks:
+      - corp
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_SERVER: database
+    depends_on:
+      - database
